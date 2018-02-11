@@ -2,7 +2,7 @@
 
 let router = require("express").Router();
 let mongoose = require('mongoose');
-let TestModel1 = mongoose.model('TestModel1');
+let CatchModel = mongoose.model('Catch');
 
 router.route('/')
     .get(function (req, res){
@@ -16,14 +16,14 @@ router.route('/api/')
 
 router.route('/api/catches')
     .get(function(req, res) {
-        TestModel1.find({}, function(err, test) {
+        CatchModel.find({}, function(err, test) {
             res.json(test);
 
             console.log(req.query.id);
         })
     })
     .post(function(req, res) {
-        let makeTest = new TestModel1(req.body);
+        let makeTest = new CatchModel(req.body);
         makeTest.save(function(err, test) {
           res.json(test);
           console.log(req.body);
@@ -33,16 +33,28 @@ router.route('/api/catches')
 
 router.route('/api/catches/:catchId')
     .get(function (req, res) {
-        res.json({ 
-            message: 'This is information regarding this specific catch', 
-            id: req.params.catchId,
-            links: [
-                {
-                    self: 'http://localhost:8000/api/catches/' + req.params.catchId,
-                    delete: 'http://localhost:8000/api/catches/delete/' + req.params.catchId,
-                }
-            ]
+        CatchModel.findById(req.params.catchId, function (err, doc){
+            res.json({ 
+                id: doc.catchId,
+                user: doc.user,
+                position: doc.position,
+                specie: doc.specie,
+                weigth: doc.weigth,
+                length: doc.length,
+                image_url: doc.image_url,
+                description: doc.description,
+                misc: doc.misc,
+                timestamp: doc.timestamp,
+                links: [
+                    {
+                        self: 'http://localhost:8000/api/catches/' + doc.catchId,
+                        delete: 'http://localhost:8000/api/catches/delete/' + doc.catchId,
+                    }
+                ]
+            });
         });
+
+        
 
     })
     .put(function(req, res) {

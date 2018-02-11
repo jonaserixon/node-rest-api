@@ -4,13 +4,15 @@ let mongoose = require('mongoose');
 
 let catchSchema = mongoose.Schema({
     user: {
-        type: String
+        type: String,
+        required: true
     },
     position: {
         type: String
     },
     specie: {
-        type: String
+        type: String,
+        required: true
     },
     weight: {
         type: String
@@ -22,7 +24,8 @@ let catchSchema = mongoose.Schema({
         type: String
     },
     description: {
-        type: String
+        type: String,
+        required: true
     },
     misc: {
         type: String

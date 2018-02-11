@@ -2,7 +2,7 @@
 
 let express = require('express');
 let bodyParser = require('body-parser');
-let TestModel1 = require('./models/testModel1');
+let CatchModel = require('./models/catchModel');
 
 let app = express();
 let port = process.env.PORT || 8000;
