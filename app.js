@@ -11,6 +11,7 @@ let port = process.env.PORT || 8000;
 require('./config/database').initilize();
 
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
