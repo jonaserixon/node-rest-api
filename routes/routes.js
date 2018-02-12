@@ -16,26 +16,31 @@ router.route('/api/')
 
 router.route('/api/catches')
     .get(function(req, res) {
-        CatchModel.find({}, function(err, test) {
-            res.json(test);
+        CatchModel.find({}, function(err, doc) {
+            if (err) {
 
-            console.log(req.query.id);
+            }
+
+            res.json(doc);
         })
     })
     .post(function(req, res) {
         let makeTest = new CatchModel(req.body);
-        makeTest.save(function(err, test) {
-          res.json(test);
-          console.log(req.body);
+        makeTest.save(function(err, doc) {
+            if (err) {
+
+            }
+
+            res.json(doc);
         });
     })
 
 
-router.route('/api/catches/:catchId')
+router.route('/api/catches/:id')
     .get(function (req, res) {
-        CatchModel.findById(req.params.catchId, function (err, doc){
+        CatchModel.findById(req.params.id, function (err, doc){
             res.json({ 
-                id: doc.catchId,
+                id: doc.id,
                 user: doc.user,
                 position: doc.position,
                 specie: doc.specie,
@@ -47,21 +52,45 @@ router.route('/api/catches/:catchId')
                 timestamp: doc.timestamp,
                 links: [
                     {
-                        self: 'http://localhost:8000/api/catches/' + doc.catchId,
-                        delete: 'http://localhost:8000/api/catches/delete/' + doc.catchId,
+                        self: 'http://localhost:8000/api/catches/' + doc.id,
+                        category: 'http://localhost:8000/api/catches/'
                     }
                 ]
             });
         });
-
-        
-
     })
+    
     .put(function(req, res) {
+        CatchModel.findByIdAndUpdate(req.params.id, function(err, doc) {
+            if (err) {
+                //error message
+                res.status(400).json(err);
+            }
 
+            res.json({ 
+                message: 'Update successful!',
+                user: doc.user,
+                links: [
+                    {
+                        self: 'http://localhost:8000/api/catches/' + doc.id,
+                        category: 'http://localhost:8000/api/catches/'
+                    }
+                ]
+            });
+        });
     })
-    .delete(function(req, res) {
 
+    .delete(function(req, res) {
+        CatchModel.findByIdAndRemove(req.params.id, function(err) {
+            if (err) {
+                //error message
+                res.status(400).json(err);
+            }
+
+            res.json({
+                message: 'Delete success!'
+            });
+        });
     })
 
 
