@@ -11,13 +11,13 @@ let GitHubStrategy = require('passport-github2').Strategy;
 var GITHUB_CLIENT_ID = '672e1847db6e0d151b27';
 var GITHUB_CLIENT_SECRET = 'b1e63aa0c34c7f22bd97ee65bcbe09b992839673';
 
-passport.serializeUser(function(user, done) {
-    done(null, user);
-  });
+// passport.serializeUser(function(user, done) {
+//     done(null, user);
+//   });
   
-passport.deserializeUser(function(obj, done) {
-    done(null, obj);
-});
+// passport.deserializeUser(function(obj, done) {
+//     done(null, obj);
+// });
 
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
@@ -48,13 +48,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
+
+
 //Routes
-let routes = require('./routes/routes')(passport); 
+let routes = require('./routes/routes')(passport, GitHubStrategy); 
 app.use('/', routes);
-
-
-
-
 
 
 //Web server

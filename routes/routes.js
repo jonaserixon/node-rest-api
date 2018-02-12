@@ -13,7 +13,10 @@ module.exports = function(passport) {
 
     router.route('/api/')
         .get(function (req, res){
-            res.json( { message: 'Welcome to the api!' });
+            res.json( { 
+                message: 'Welcome to the api! To get access to unsafe HTTP methods please authenticate through the link below.',
+                link: 'http://localhost:8000/auth/github'
+            });
         })
 
     router.route('/api/catches')
@@ -26,11 +29,11 @@ module.exports = function(passport) {
                 res.json(doc);
             })
         })
-        .post(function(req, res) {
+        .post(ensureAuthenticated, function(req, res) {
             let makeTest = new CatchModel(req.body);
             makeTest.save(function(err, doc) {
                 if (err) {
-
+                    //message
                 }
 
                 res.json(doc);
@@ -62,7 +65,7 @@ module.exports = function(passport) {
             });
         })
 
-        .put(function(req, res) {
+        .put(ensureAuthenticated, function(req, res) {
             CatchModel.findByIdAndUpdate(req.params.id, function(err, doc) {
                 if (err) {
                     //error message
@@ -82,7 +85,7 @@ module.exports = function(passport) {
             });
         })
 
-        .delete(function(req, res) {
+        .delete(ensureAuthenticated, function(req, res) {
             CatchModel.findByIdAndRemove(req.params.id, function(err) {
                 if (err) {
                     //error message
@@ -95,21 +98,21 @@ module.exports = function(passport) {
             });
         })
 
-        // let passport = require('passport');
-        // let GitHubStrategy = require('passport-github2').Strategy;
-
-        router.get('/auth/github',
-        passport.authenticate('github', { scope: [ 'user:email' ] }),
-            function(req, res){}
-        );
+    router.get('/auth/github',
+        passport.authenticate('github', { session: false }, { scope: [ 'user:email' ] }));
 
     router.get('/auth/github/callback', 
         passport.authenticate('github', { failureRedirect: '/login' }),
             function(req, res) {
                 res.redirect('/');
             }
-    );
+        );
 
+
+    function ensureAuthenticated(req, res, next) {
+        if (req.isAuthenticated()) { return next(); }
+        res.redirect('/api/')
+    }
 
     return router;
 };
