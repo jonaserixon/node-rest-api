@@ -111,7 +111,9 @@ module.exports = function(passport) {
 
     function ensureAuthenticated(req, res, next) {
         if (req.isAuthenticated()) { return next(); }
-        res.redirect('/api/')
+        res.json({
+            message: 'Unauthorized access!'
+        })
     }
 
     return router;
