@@ -109,7 +109,6 @@ module.exports = function(jwt) {
                 if (err) {
                     CatchModel.findById(req.params.id, function (err, doc){
                         res.json({ 
-                            id: doc.id,
                             user: doc.user,
                             specie: doc.specie,
                             description: doc.description,
@@ -145,15 +144,31 @@ module.exports = function(jwt) {
         })
 
         .put(function(req, res) {
-            CatchModel.findByIdAndUpdate(req.params.id, function(err, doc) {
+            console.log(req.params.id);
+            CatchModel.findOne({_id: req.params.id}, function(err, doc) {
+                console.log('test2');
                 if (err) {
                     //error message
                     res.status(400).json(err);
                 }
 
+                console.log(req.body.specie);
+
+                doc.position = req.body.position,
+                doc.specie = req.body.specie,
+                doc.weigth = req.body.weigth,
+                doc.length = req.body.length
+                doc.image_url = req.body.image_url,
+                doc.description = req.body.description,
+                doc.misc = req.body.misc
+
+                doc.save(function(err) {
+                    if (err) { console.log(err); }
+                })
+                
+
                 res.json({ 
                     message: 'Update successful!',
-                    user: doc.user,
                     links: [
                         {
                             href: req.url,
@@ -186,6 +201,26 @@ module.exports = function(jwt) {
                 });
             });
         })
+
+    router.route('/api/webhook/:id')
+        .get(function (req, res) {
+            jwt.verify(req.token, 'secret', function(err, data) {
+
+            })
+            //Shows all webhooks that the user has subscribed to
+        })
+
+    router.route('/api/webhook/')
+        .get(function (req, res) {
+            //Documentation
+        })
+        .post(jwtVerify, function (req, res) {
+            jwt.verify(req.token, 'secret', function(err, data) {
+
+            })
+            //webhook subscription
+        })
+    
 
     return router;
 };
