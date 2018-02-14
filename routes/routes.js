@@ -70,7 +70,8 @@ module.exports = function(jwt) {
             req.token = splitHeader[1];
             next();
         } else {
-            res.json({message: 'Forbidden'})
+            //res.json({message: 'Forbidden'})
+            next();
         }
     }
 
@@ -99,35 +100,48 @@ module.exports = function(jwt) {
                     res.json(doc);
                 });
             });
-
-            
         })
 
 
     router.route('/api/catches/:id')
-        .get(function (req, res) {
-            CatchModel.findById(req.params.id, function (err, doc){
-                res.json({ 
-                    id: doc.id,
-                    user: doc.user,
-                    position: doc.position,
-                    specie: doc.specie,
-                    weigth: doc.weigth,
-                    length: doc.length,
-                    image_url: doc.image_url,
-                    description: doc.description,
-                    misc: doc.misc,
-                    timestamp: doc.timestamp,
-                    links: [
-                        {
-                            href: req.url,
-                            rel: 'self',
-                            method: 'GET',
-                            category: '/api/catches/'
-                        }
-                    ]
-                });
-            });
+        .get(jwtVerify, function (req, res) {
+            jwt.verify(req.token, 'secret', function(err, data) {
+                if (err) {
+                    CatchModel.findById(req.params.id, function (err, doc){
+                        res.json({ 
+                            id: doc.id,
+                            user: doc.user,
+                            specie: doc.specie,
+                            description: doc.description,
+                            misc: doc.misc,
+                            timestamp: doc.timestamp,
+                        });
+                    });
+                } else {
+                    CatchModel.findById(req.params.id, function (err, doc){
+                        res.json({ 
+                            id: doc.id,
+                            user: doc.user,
+                            position: doc.position,
+                            specie: doc.specie,
+                            weigth: doc.weigth,
+                            length: doc.length,
+                            image_url: doc.image_url,
+                            description: doc.description,
+                            misc: doc.misc,
+                            timestamp: doc.timestamp,
+                            links: [
+                                {
+                                    href: req.url,
+                                    rel: 'self',
+                                    method: 'GET',
+                                    category: '/api/catches/'
+                                }
+                            ]
+                        });
+                    });
+                }
+            })
         })
 
         .put(function(req, res) {
@@ -172,6 +186,6 @@ module.exports = function(jwt) {
                 });
             });
         })
-        
+
     return router;
 };
