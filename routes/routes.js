@@ -3,8 +3,9 @@
 let router = require("express").Router();
 let mongoose = require('mongoose');
 let CatchModel = mongoose.model('Catch');
+let UserModel = mongoose.model('User');
 
-module.exports = function(passport) {
+module.exports = function(jwt) {
 
     router.route('/')
         .get(function (req, res){
@@ -15,9 +16,63 @@ module.exports = function(passport) {
         .get(function (req, res){
             res.json( { 
                 message: 'Welcome to the api! To get access to unsafe HTTP methods please authenticate through the link below.',
-                link: 'http://localhost:8000/auth/github'
+                link: 'http://localhost:8000/api/auth/'
             });
         })
+
+    //authorize
+    router.route('/api/auth/')
+        .get(function (req, res){
+            res.json( { 
+                message: 'Send a POST with your username to this URL to receive token.',
+                link: [
+                    {
+                        href: req.url,
+                        rel: 'self'
+                    }
+                ]
+            });
+        })
+        .post(function(req, res) {
+            UserModel.find({'username': req.body.username}, function(err, user) {
+                if (err) {
+                    return res.sendStatus(403);
+                }
+                if (!user.length) {
+                    //Skapa användaren
+                    // let newUser = new UserModel(req.body);
+                    // newUser.save(function(err, doc) {
+                    //     if (err) {
+                    //         //message
+                    //     }
+                    //     jwt.sign({user: newUser}, 'secret', function(err, token) {
+                    //         res.json({
+                    //             token: token
+                    //         });
+                    //     });
+                    // });
+                    res.json({message: 'User does not exist'});
+                } else {
+                    jwt.sign({user: user}, 'secret', function(err, token) {
+                        res.json({
+                            token: token
+                        });
+                    });
+                }
+            }); 
+        })
+
+    function jwtVerify(req, res, next) {
+        let header = req.headers['authorization'];
+
+        if (typeof header !== 'undefined') {
+            let splitHeader = header.split(' ');
+            req.token = splitHeader[1];
+            next();
+        } else {
+            res.json({message: 'Forbidden'})
+        }
+    }
 
     router.route('/api/catches')
         .get(function(req, res) {
@@ -29,15 +84,23 @@ module.exports = function(passport) {
                 res.json(doc);
             })
         })
-        .post(ensureAuthenticated, function(req, res) {
-            let makeTest = new CatchModel(req.body);
-            makeTest.save(function(err, doc) {
+        .post(jwtVerify, function(req, res) {
+            jwt.verify(req.token, 'secret', function(err, data) {
                 if (err) {
-                    //message
+                    res.sendStatus(403);
                 }
 
-                res.json(doc);
+                let makeTest = new CatchModel(req.body);
+                makeTest.save(function(err, doc) {
+                    if (err) {
+                        //message
+                    }
+
+                    res.json(doc);
+                });
             });
+
+            
         })
 
 
@@ -57,15 +120,17 @@ module.exports = function(passport) {
                     timestamp: doc.timestamp,
                     links: [
                         {
-                            self: 'http://localhost:8000/api/catches/' + doc.id,
-                            category: 'http://localhost:8000/api/catches/'
+                            href: req.url,
+                            rel: 'self',
+                            method: 'GET',
+                            category: '/api/catches/'
                         }
                     ]
                 });
             });
         })
 
-        .put(ensureAuthenticated, function(req, res) {
+        .put(function(req, res) {
             CatchModel.findByIdAndUpdate(req.params.id, function(err, doc) {
                 if (err) {
                     //error message
@@ -77,15 +142,17 @@ module.exports = function(passport) {
                     user: doc.user,
                     links: [
                         {
-                            self: 'http://localhost:8000/api/catches/' + doc.id,
-                            category: 'http://localhost:8000/api/catches/'
+                            href: req.url,
+                            rel: 'self',
+                            method: 'PUT',
+                            category: '/api/catches/'
                         }
                     ]
                 });
             });
         })
 
-        .delete(ensureAuthenticated, function(req, res) {
+        .delete(function(req, res) {
             CatchModel.findByIdAndRemove(req.params.id, function(err) {
                 if (err) {
                     //error message
@@ -93,28 +160,18 @@ module.exports = function(passport) {
                 }
 
                 res.json({
-                    message: 'Delete success!'
+                    message: 'Delete success!',
+                    links: [
+                        {
+                            href: req.url,
+                            rel: 'self',
+                            method: 'DELETE',
+                            category: '/api/catches/'
+                        }
+                    ]
                 });
             });
         })
-
-    router.get('/auth/github',
-        passport.authenticate('github', { session: false }, { scope: [ 'user:email' ] }));
-
-    router.get('/auth/github/callback', 
-        passport.authenticate('github', { failureRedirect: '/login' }),
-            function(req, res) {
-                res.redirect('/');
-            }
-        );
-
-
-    function ensureAuthenticated(req, res, next) {
-        if (req.isAuthenticated()) { return next(); }
-        res.json({
-            message: 'Unauthorized access!'
-        })
-    }
-
+        
     return router;
 };
