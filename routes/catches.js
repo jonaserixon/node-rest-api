@@ -76,6 +76,7 @@ module.exports = function(jwt) {
                 if (err) {
 
                 }
+                
 
                 res.json(doc);
             })
@@ -85,29 +86,27 @@ module.exports = function(jwt) {
                 if (err) {
                     res.sendStatus(403);
                 }
+                
 
-                WebhookModel.find({}, function(err, data) {
-
-                    for(let i = 0; i < data.length; i++) {
-                        console.log(data[i].links[0][0]);
-
-                        request.post(
-                            data[i].links[0][0],
-                            { json: { key: req.body } },
-                            function (error, response, body) {
-                                if (!error && response.statusCode == 200) {
-                                    console.log(body)
-                                }
-                            }
-                        );
-                    }
-                })
-
-                let makeTest = new CatchModel(req.body);
-                makeTest.save(function(err, doc) {
+                let createCatch = new CatchModel(req.body);
+                createCatch.save(function(err, doc) {
                     if (err) {
                         //message
                     }
+
+                    WebhookModel.find({}, function(err, data) {
+                        for(let i = 0; i < data.length; i++) {
+                            console.log(data[i].links[0][0]);
+                            request.post(data[i].links[0][0], { json: { key: doc }},
+                                function (error, res, body) {
+                                    if (!error && res.statusCode == 200) {
+                                        //console.log(body)
+                                    }
+                                }
+                            );
+                        }
+                    })
+
                     res.json(doc);
                 });
             });
@@ -218,9 +217,9 @@ module.exports = function(jwt) {
         })
 
 
-    router.route('/webhook/test/')
+    router.route('/test/')
         .post(function(req, res) {
-            console.log('WEBHOOK EVENT');
+            console.log(req.body);
         })
 
     return router;
