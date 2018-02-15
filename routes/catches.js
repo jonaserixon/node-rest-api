@@ -4,6 +4,11 @@ let router = require("express").Router();
 let mongoose = require('mongoose');
 let CatchModel = mongoose.model('Catch');
 let UserModel = mongoose.model('User');
+let WebhookModel = mongoose.model('Webhook');
+
+let request = require('request');
+
+let jwtVerify = require('../jwt');
 
 module.exports = function(jwt) {
 
@@ -63,18 +68,7 @@ module.exports = function(jwt) {
             }); 
         })
 
-    function jwtVerify(req, res, next) {
-        let header = req.headers['authorization'];
-
-        if (typeof header !== 'undefined') {
-            let splitHeader = header.split(' ');
-            req.token = splitHeader[1];
-            next();
-        } else {
-            //res.json({message: 'Forbidden'})
-            next();
-        }
-    }
+    
 
     router.route('/api/catches')
         .get(function(req, res) {
@@ -92,12 +86,28 @@ module.exports = function(jwt) {
                     res.sendStatus(403);
                 }
 
+                WebhookModel.find({}, function(err, data) {
+
+                    for(let i = 0; i < data.length; i++) {
+                        console.log(data[i].links[0][0]);
+
+                        request.post(
+                            data[i].links[0][0],
+                            { json: { key: req.body } },
+                            function (error, response, body) {
+                                if (!error && response.statusCode == 200) {
+                                    console.log(body)
+                                }
+                            }
+                        );
+                    }
+                })
+
                 let makeTest = new CatchModel(req.body);
                 makeTest.save(function(err, doc) {
                     if (err) {
                         //message
                     }
-
                     res.json(doc);
                 });
             });
@@ -207,23 +217,10 @@ module.exports = function(jwt) {
             });
         })
 
-    router.route('/api/webhook/:id')
-        .get(function (req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
 
-            })
-            //Shows all webhooks that the user has subscribed to
-        })
-
-    router.route('/api/webhook/')
-        .get(function (req, res) {
-            //Documentation
-        })
-        .post(jwtVerify, function (req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
-
-            })
-            //webhook subscription
+    router.route('/webhook/test/')
+        .post(function(req, res) {
+            console.log('WEBHOOK EVENT');
         })
 
     return router;

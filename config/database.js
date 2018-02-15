@@ -4,7 +4,7 @@ let mongoose = require("mongoose");
 
 module.exports = {
 
-    initilize : function() {
+    initialize : function() {
         let db = mongoose.connection;
 
         db.on("error", console.error.bind(console, "connection error:"));
