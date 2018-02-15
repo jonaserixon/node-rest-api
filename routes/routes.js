@@ -53,9 +53,10 @@ module.exports = function(jwt) {
                     // });
                     res.json({message: 'User does not exist'});
                 } else {
-                    jwt.sign({user: user}, 'secret', function(err, token) {
+                    jwt.sign({user: user}, 'notverysecret', function(err, token) {
                         res.json({
-                            token: token
+                            token: token,
+                            expiresInMinutes: 1440
                         });
                     });
                 }
@@ -86,7 +87,7 @@ module.exports = function(jwt) {
             })
         })
         .post(jwtVerify, function(req, res) {
-            jwt.verify(req.token, 'secret', function(err, data) {
+            jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
                     res.sendStatus(403);
                 }
@@ -105,7 +106,7 @@ module.exports = function(jwt) {
 
     router.route('/api/catches/:id')
         .get(jwtVerify, function (req, res) {
-            jwt.verify(req.token, 'secret', function(err, data) {
+            jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
                     CatchModel.findById(req.params.id, function (err, doc){
                         res.json({ 
@@ -143,42 +144,46 @@ module.exports = function(jwt) {
             })
         })
 
-        .put(function(req, res) {
-            console.log(req.params.id);
-            CatchModel.findOne({_id: req.params.id}, function(err, doc) {
-                console.log('test2');
+        .put(jwtVerify, function(req, res) {
+            jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
-                    //error message
-                    res.status(400).json(err);
+                    //err
                 }
 
-                console.log(req.body.specie);
+                CatchModel.findOne({_id: req.params.id}, function(err, doc) {
+                    if (err) {
+                        //error message
+                        res.status(400).json(err);
+                    }
 
-                doc.position = req.body.position,
-                doc.specie = req.body.specie,
-                doc.weigth = req.body.weigth,
-                doc.length = req.body.length
-                doc.image_url = req.body.image_url,
-                doc.description = req.body.description,
-                doc.misc = req.body.misc
+                    console.log(req.body.specie);
 
-                doc.save(function(err) {
-                    if (err) { console.log(err); }
-                })
-                
+                    doc.position = req.body.position,
+                    doc.specie = req.body.specie,
+                    doc.weigth = req.body.weigth,
+                    doc.length = req.body.length
+                    doc.image_url = req.body.image_url,
+                    doc.description = req.body.description,
+                    doc.misc = req.body.misc
 
-                res.json({ 
-                    message: 'Update successful!',
-                    links: [
-                        {
-                            href: req.url,
-                            rel: 'self',
-                            method: 'PUT',
-                            category: '/api/catches/'
-                        }
-                    ]
+                    doc.save(function(err) {
+                        if (err) { console.log(err); }
+                    })
+                    
+
+                    res.json({ 
+                        message: 'Update successful!',
+                        links: [
+                            {
+                                href: req.url,
+                                rel: 'self',
+                                method: 'PUT',
+                                category: '/api/catches/'
+                            }
+                        ]
+                    });
                 });
-            });
+            })
         })
 
         .delete(function(req, res) {
@@ -204,7 +209,7 @@ module.exports = function(jwt) {
 
     router.route('/api/webhook/:id')
         .get(function (req, res) {
-            jwt.verify(req.token, 'secret', function(err, data) {
+            jwt.verify(req.token, 'notverysecret', function(err, data) {
 
             })
             //Shows all webhooks that the user has subscribed to
@@ -215,12 +220,11 @@ module.exports = function(jwt) {
             //Documentation
         })
         .post(jwtVerify, function (req, res) {
-            jwt.verify(req.token, 'secret', function(err, data) {
+            jwt.verify(req.token, 'notverysecret', function(err, data) {
 
             })
             //webhook subscription
         })
-    
 
     return router;
 };
