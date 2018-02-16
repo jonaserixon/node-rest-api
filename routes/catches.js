@@ -14,8 +14,24 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
     router.route('/api/')
         .get(function(req, res){
             res.json( { 
-                message: 'Welcome to the api! To get access to unsafe HTTP methods please authenticate through the link below.',
-                link: 'http://localhost:8000/api/auth/'
+                message: 'Welcome to the api! To get access to unsafe HTTP methods, please register or authorize through the links below.',
+                links: [
+                    {
+                        href: req.url,
+                        rel: 'self',
+                        method: 'GET'
+                    },
+                    {
+                        href: '/api/auth/',
+                        rel: 'auth',
+                        method: 'GET'
+                    },
+                    {
+                        href: '/api/register/',
+                        rel: 'register',
+                        method: 'GET'
+                    }
+                ]
             });
         })
 
@@ -23,17 +39,21 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
     router.route('/api/register/')
         .get(function(req, res){
             res.json( { 
-                message: 'Send a POST with your username as to this URL to register.',
-                example: '{ "user":"John"}',
-                link: [
+                message: "Send a POST with your username to this URL to register. EXAMPLE: { 'user':'John' }",
+                links: [
                     {
                         href: req.url,
                         rel: 'self'
-                    }
+                    },
+                    {
+                        href: '/api/auth/',
+                        rel: 'auth',
+                        method: 'GET'
+                    },
                 ]
             });
         })
-        
+
         .post(function(req, res) {
             let newUser = new UserModel(req.body);
 
@@ -45,10 +65,11 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
 
                 res.json( { 
                     message: 'Successfully registered!',
-                    link: [
+                    links: [
                         {
                             href: '/api/auth/',
-                            rel: 'authorize'
+                            rel: 'authorize',
+                            method: 'GET'
                         }
                     ]
                 });
@@ -61,7 +82,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
         .get(function (req, res){
             res.json( { 
                 message: 'Send a POST with your username to this URL to receive token.',
-                link: [
+                links: [
                     {
                         href: req.url,
                         rel: 'self'
@@ -82,7 +103,24 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
                     jwt.sign({user: user}, 'notverysecret', function(err, token) {
                         res.json({
                             token: token,
-                            expiresInMinutes: 1440
+                            expiresInMinutes: 1440,
+                            links: [
+                                {
+                                    href: '/api/auth/',
+                                    rel: 'self',
+                                    method: 'POST'
+                                },
+                                {
+                                    href: '/api/catches/',
+                                    rel: 'resource',
+                                    method: 'GET'
+                                },
+                                {
+                                    href: '/api/webhook/',
+                                    rel: 'webhook',
+                                    method: 'GET'
+                                }
+                            ]
                         });
                     });
                 }

@@ -3,7 +3,7 @@
 let router = require("express").Router();
 let jwtVerify = require('../jwt');
 
-module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
+module.exports = function(jwt, WebhookModel) {
 
     router.route('/api/webhook/:id')
             .get(function (req, res) {
@@ -16,11 +16,17 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
         .get(function (req, res) {
             //Documentation
             res.json( { 
-                message: 'To create a webhook, make a POST to this route and state what event you want to subscribe to and your URL.',
+                message: "To create a webhook, make a POST to this route and state your URL. EXAMPLE: { 'links':'http://localhost:8000' }",
                 link: [
                     {
                         href: req.url,
-                        rel: 'self'
+                        rel: 'self',
+                        method: 'GET'
+                    },
+                    {
+                        href: '/api/catches/',
+                        rel: 'resource',
+                        method: 'GET'
                     }
                 ]
             });

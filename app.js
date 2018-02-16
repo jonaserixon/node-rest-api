@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //Routes
 let catches = require('./routes/catches')(jwt, CatchModel, UserModel, WebhookModel); 
-let webhooks = require('./routes/webhooks')(jwt); 
+let webhooks = require('./routes/webhooks')(jwt, WebhookModel); 
 app.use('/', catches);
 app.use('/', webhooks);
 
