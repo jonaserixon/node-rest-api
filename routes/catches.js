@@ -1,29 +1,60 @@
 'use strict';
 
 let router = require("express").Router();
-let mongoose = require('mongoose');
-let CatchModel = mongoose.model('Catch');
-let UserModel = mongoose.model('User');
-let WebhookModel = mongoose.model('Webhook');
-
 let request = require('request');
-
 let jwtVerify = require('../jwt');
 
-module.exports = function(jwt) {
+module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
 
     router.route('/')
-        .get(function (req, res){
+        .get(function(req, res){
             res.send('<p>To use our API, refer to the http://localhost:8000/api/ resource.</p>');
         })
 
     router.route('/api/')
-        .get(function (req, res){
+        .get(function(req, res){
             res.json( { 
                 message: 'Welcome to the api! To get access to unsafe HTTP methods please authenticate through the link below.',
                 link: 'http://localhost:8000/api/auth/'
             });
         })
+
+
+    router.route('/api/register/')
+        .get(function(req, res){
+            res.json( { 
+                message: 'Send a POST with your username as to this URL to register.',
+                example: '{ "user":"John"}',
+                link: [
+                    {
+                        href: req.url,
+                        rel: 'self'
+                    }
+                ]
+            });
+        })
+        
+        .post(function(req, res) {
+            let newUser = new UserModel(req.body);
+
+            newUser.save(function(err, doc) {
+                if (err) {
+                    //message
+                    console.log(err);
+                }
+
+                res.json( { 
+                    message: 'Successfully registered!',
+                    link: [
+                        {
+                            href: '/api/auth/',
+                            rel: 'authorize'
+                        }
+                    ]
+                });
+            });
+        })
+
 
     //authorize
     router.route('/api/auth/')
@@ -38,25 +69,15 @@ module.exports = function(jwt) {
                 ]
             });
         })
+
         .post(function(req, res) {
-            UserModel.find({'username': req.body.username}, function(err, user) {
+            UserModel.find({'user': req.body.user}, function(err, user) {
                 if (err) {
                     return res.sendStatus(403);
                 }
                 if (!user.length) {
-                    //Skapa användaren
-                    // let newUser = new UserModel(req.body);
-                    // newUser.save(function(err, doc) {
-                    //     if (err) {
-                    //         //message
-                    //     }
-                    //     jwt.sign({user: newUser}, 'secret', function(err, token) {
-                    //         res.json({
-                    //             token: token
-                    //         });
-                    //     });
-                    // });
                     res.json({message: 'User does not exist'});
+
                 } else {
                     jwt.sign({user: user}, 'notverysecret', function(err, token) {
                         res.json({
@@ -81,6 +102,7 @@ module.exports = function(jwt) {
                 res.json(doc);
             })
         })
+
         .post(jwtVerify, function(req, res) {
             jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
@@ -92,23 +114,26 @@ module.exports = function(jwt) {
                 createCatch.save(function(err, doc) {
                     if (err) {
                         //message
+                        console.log(err);
                     }
 
-                    WebhookModel.find({}, function(err, data) {
-                        for(let i = 0; i < data.length; i++) {
-                            console.log(data[i].links[0][0]);
-                            request.post(data[i].links[0][0], { json: { key: doc }},
-                                function (error, res, body) {
-                                    if (!error && res.statusCode == 200) {
-                                        //console.log(body)
-                                    }
-                                }
-                            );
-                        }
-                    })
-
-                    res.json(doc);
+                    
                 });
+
+                WebhookModel.find({}, function(err, data) {
+                    for(let i = 0; i < data.length; i++) {
+                        console.log(data[i].links[0][0]);
+                        request.post(data[i].links[0][0], { json: { key: req.body }},
+                            function (error, res, body) {
+                                if (!error && res.statusCode == 200) {
+                                    //console.log(body)
+                                }
+                            }
+                        );
+                    }
+                })
+
+                res.json(req.body);
             });
         })
 
@@ -179,7 +204,6 @@ module.exports = function(jwt) {
                         if (err) { console.log(err); }
                     })
                     
-
                     res.json({ 
                         message: 'Update successful!',
                         links: [
@@ -220,6 +244,7 @@ module.exports = function(jwt) {
     router.route('/test/')
         .post(function(req, res) {
             console.log(req.body);
+            res.json(req.body);
         })
 
     return router;

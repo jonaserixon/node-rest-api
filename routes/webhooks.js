@@ -1,14 +1,9 @@
 'use strict';
 
 let router = require("express").Router();
-let mongoose = require('mongoose');
-let CatchModel = mongoose.model('Catch');
-let UserModel = mongoose.model('User');
-let WebhookModel = mongoose.model('Webhook');
-
 let jwtVerify = require('../jwt');
 
-module.exports = function(jwt) {
+module.exports = function(jwt, CatchModel, UserModel, WebhookModel) {
 
     router.route('/api/webhook/:id')
             .get(function (req, res) {
