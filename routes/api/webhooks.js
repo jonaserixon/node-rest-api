@@ -1,21 +1,13 @@
 'use strict';
 
 let router = require("express").Router();
-let jwtVerify = require('../jwt');
 
-module.exports = function(jwt, WebhookModel) {
-
-    router.route('/api/webhook/:id')
-            .get(function (req, res) {
-                jwt.verify(req.token, 'notverysecret', function(err, data) {
-                //Show specific webhook
-                })
-            })
+module.exports = function(jwt, WebhookModel, jwtVerify) {
 
     router.route('/api/webhook/')
         .get(function (req, res) {
             //Documentation
-            res.json( { 
+            res.status(200).json( { 
                 message: "To create a webhook, make a POST to this route and state your URL. EXAMPLE: { 'links':'http://localhost:8000' }",
                 link: [
                     {
@@ -34,16 +26,16 @@ module.exports = function(jwt, WebhookModel) {
         .post(jwtVerify, function (req, res) {
             jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
-                    res.sendStatus(403);
+                    return res.sendStatus(401);
                 }
 
                 let createWebhook = new WebhookModel(req.body);
                 createWebhook.save(function(err, doc) {
                         if (err) {
-                            //message
+                            return res.status(500).json(err);
                         }
 
-                        res.json(doc);
+                        res.status(201).json(doc);
                 });
             })
         })
