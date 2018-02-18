@@ -12,7 +12,6 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             res.send('<p>To use our API, refer to the http://localhost:8000/api/ route.</p>');
         })
 
-    //ROOT API
     router.route('/api/')
         .get(function(req, res){
             res.status(200).json({ 
@@ -40,6 +39,16 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                 ]
             });
         })
+
+
+    router.route('/api/user/:username/')
+        .get(function(req, res) {
+            CatchModel.find({user: req.params.username}, function(err, doc) {
+                res.json(doc);
+            })
+        })
+
+
 
     router.route('/api/catches')
         .get(function(req, res) {
