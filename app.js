@@ -17,7 +17,6 @@ let WebhookModel = mongoose.model('Webhook');
 let app = express();
 let port = process.env.PORT || 8000;
 
-
 //database
 require('./config/database').initialize();
 
@@ -32,9 +31,13 @@ function jwtVerify(req, res, next) {
     next();
 }
 
+app.use(function (req, res, next) {
+    res.header('Content-Type','application/json');
+    next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 
 //Routes
 let catches = require('./routes/api/catches')(jwt, CatchModel, UserModel, WebhookModel, jwtVerify); 
@@ -42,14 +45,10 @@ let webhooks = require('./routes/api/webhooks')(jwt, WebhookModel, jwtVerify);
 let register = require('./routes/api/register')(jwt, UserModel, jwtVerify); 
 let auth = require('./routes/api/auth')(jwt, UserModel, jwtVerify); 
 
-
 app.use('/', catches);
 app.use('/', webhooks);
 app.use('/', register);
 app.use('/', auth);
-
-
-
 
 //Web server
 app.listen(port, function() {

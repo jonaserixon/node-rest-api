@@ -3,17 +3,19 @@
 let router = require("express").Router();
 let request = require('request');
 
+let baseUrl = 'http://localhost:8000';
+
 module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
     router.route('/')
         .get(function(req, res){
-            res.send('<p>To use our API, refer to the http://localhost:8000/api/ resource.</p>');
+            res.send('<p>To use our API, refer to the http://localhost:8000/api/ route.</p>');
         })
 
+    //ROOT API
     router.route('/api/')
         .get(function(req, res){
-            res.status(200).json( { 
-                message: 'Welcome to the api! To get access to unsafe HTTP methods, please register or authorize through the links below.',
+            res.status(200).json({ 
                 links: [
                     {
                         href: req.url,
@@ -29,6 +31,11 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                         href: '/api/register/',
                         rel: 'register',
                         method: 'GET'
+                    },
+                    {
+                        href: '/api/catches/',
+                        rel: 'resource',
+                        method: 'GET'
                     }
                 ]
             });
@@ -41,7 +48,15 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                     return res.status(500).json(err);
                 }
 
-                res.status(200).json(doc);
+                let data = [];
+
+                for(let i = 0; i < doc.length; i++) {
+                    data.push({
+                        catch: baseUrl + req.url + '/' + doc[i].id
+                    });
+                }          
+                
+                res.status(200).json({catches: data});
             })
         })
 
@@ -64,7 +79,6 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                     }
 
                     for(let i = 0; i < data.length; i++) {
-                        //console.log(data[i].links[0][0]);
                         request.post(data[i].links[0][0], { json: { key: req.body }},
                             function (error, res, body) {}
                         );
