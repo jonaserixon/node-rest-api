@@ -101,6 +101,18 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
     router.route('/api/catches/:id')
         .get(jwtVerify, function (req, res) {
+
+            let prevCatch = '';
+            let nextCatch = '';
+
+            CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec(function(errus, postus) {                    
+                prevCatch = postus[0]._id;
+            })
+
+            CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec(function(errus, postus) {                    
+                nextCatch = postus[0]._id;
+            })
+
             jwt.verify(req.token, 'notverysecret', function(err, data) {
                 if (err) {
                     CatchModel.findById(req.params.id, function (err, doc){
@@ -109,11 +121,16 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                         }
 
                         res.status(200).json({ 
+                            id: doc.id,
                             user: doc.user,
                             specie: doc.specie,
-                            description: doc.description,
-                            misc: doc.misc,
                             timestamp: doc.timestamp,
+                            navigation: [
+                                {
+                                    previous: prevCatch,
+                                    next: nextCatch
+                                }
+                            ]
                         });
                     });
                 } else {
@@ -139,6 +156,12 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                     rel: 'self',
                                     method: 'GET',
                                     category: '/api/catches/'
+                                }
+                            ],
+                            navigation: [
+                                {
+                                    previous: prevCatch,
+                                    next: nextCatch
                                 }
                             ]
                         });
