@@ -106,96 +106,101 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             let nextCatch = '';
 
             
-            let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec();
-
-            prevQuery.then(function(doc) {
+            let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec()
+            .then(function(doc) {
                 if (typeof doc[0] != "undefined") {
-                    prevCatch = doc[0]._id;
+                    doc = doc[0]._id;
                 }
+
+                return doc;
             })
 
-            let nextQuery = CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec();
-
-            nextQuery.then(function(doc) {
+            let nextQuery = CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec()
+            .then(function(doc) {
                 if (typeof doc[0] != "undefined") {
-                    nextCatch = doc[0]._id;
+                    doc = doc[0]._id;
                 }
+
+                return doc;
             })
 
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
-                if (err) {
-                    CatchModel.findById(req.params.id, function (err, doc){
-                        if (err) {
-                            return res.status(500).json(err);
-                        }
-
-                        if(!doc) {
-                            return res.status(500).json(err);
-                        }
-
-                        res.status(200).json({ 
-                            id: doc.id,
-                            user: doc.user,
-                            specie: doc.specie,
-                            timestamp: doc.timestamp,
-                            links: [
-                                {
-                                    href: req.url,
-                                    rel: 'self',
-                                    method: 'GET'
-                                },
-                                {
-                                    href: '/api/catches/',
-                                    rel: 'parent',
-                                    method: 'GET'
-                                }
-                            ],
-                            navigation: [
-                                {
-                                    previous: baseUrl + '/api/catches/' + prevCatch,
-                                    next: baseUrl + '/api/catches/' + nextCatch
-                                }
-                            ]
+            Promise.all([prevQuery, nextQuery])
+            .then(([prevCatch, nextCatch]) => {
+                jwt.verify(req.token, 'notverysecret', function(err, data) {
+                    if (err) {
+                        CatchModel.findById(req.params.id, function (err, doc){
+                            if (err) {
+                                return res.status(500).json(err);
+                            }
+    
+                            if(!doc) {
+                                return res.status(500).json(err);
+                            }
+    
+                            res.status(200).json({ 
+                                id: doc.id,
+                                user: doc.user,
+                                specie: doc.specie,
+                                timestamp: doc.timestamp,
+                                links: [
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'GET'
+                                    },
+                                    {
+                                        href: '/api/catches/',
+                                        rel: 'parent',
+                                        method: 'GET'
+                                    }
+                                ],
+                                navigation: [
+                                    {
+                                        previous: baseUrl + '/api/catches/' + prevCatch,
+                                        next: baseUrl + '/api/catches/' + nextCatch
+                                    }
+                                ]
+                            });
                         });
-                    });
-                } else {
-                    CatchModel.findById(req.params.id, function (err, doc){
-                        if (err) {
-                            return res.status(500).json(err);
-                        }
-
-                        if(!doc) {
-                            return res.status(500).json(err);
-                        }
-
-                        res.status(200).json({ 
-                            id: doc.id,
-                            user: doc.user,
-                            position: doc.position,
-                            specie: doc.specie,
-                            weigth: doc.weigth,
-                            length: doc.length,
-                            image_url: doc.image_url,
-                            description: doc.description,
-                            misc: doc.misc,
-                            timestamp: doc.timestamp,
-                            links: [
-                                {
-                                    href: req.url,
-                                    rel: 'self',
-                                    method: 'GET',
-                                    category: '/api/catches/'
-                                }
-                            ],
-                            navigation: [
-                                {
-                                    previous: baseUrl + '/api/catches/' + prevCatch,
-                                    next: baseUrl + '/api/catches/' + nextCatch
-                                }
-                            ]
+                    } else {
+                        CatchModel.findById(req.params.id, function (err, doc){
+                            if (err) {
+                                return res.status(500).json(err);
+                            }
+    
+                            if(!doc) {
+                                return res.status(500).json(err);
+                            }
+    
+                            res.status(200).json({ 
+                                id: doc.id,
+                                user: doc.user,
+                                position: doc.position,
+                                specie: doc.specie,
+                                weigth: doc.weigth,
+                                length: doc.length,
+                                image_url: doc.image_url,
+                                description: doc.description,
+                                misc: doc.misc,
+                                timestamp: doc.timestamp,
+                                links: [
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'GET',
+                                        category: '/api/catches/'
+                                    }
+                                ],
+                                navigation: [
+                                    {
+                                        previous: baseUrl + '/api/catches/' + prevCatch,
+                                        next: baseUrl + '/api/catches/' + nextCatch
+                                    }
+                                ]
+                            });
                         });
-                    });
-                }
+                    }
+                })
             })
         })
 
