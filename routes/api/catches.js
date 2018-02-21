@@ -61,7 +61,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
                 for(let i = 0; i < doc.length; i++) {
                     data.push({
-                        catch: baseUrl + req.url + '' + doc[i].id
+                        catch: baseUrl + req.url + '/' + doc[i].id
                     });
                 }
                 
@@ -260,7 +260,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             })
         })
 
-
+    //Just testing if the webhook event works.
     router.route('/test/')
         .post(function(req, res) {
             console.log(req.body);
