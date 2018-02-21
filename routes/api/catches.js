@@ -61,9 +61,9 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
                 for(let i = 0; i < doc.length; i++) {
                     data.push({
-                        catch: baseUrl + req.url + '/' + doc[i].id
+                        catch: baseUrl + req.url + '' + doc[i].id
                     });
-                }          
+                }
                 
                 res.status(200).json({catches: data});
             })
@@ -105,12 +105,21 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             let prevCatch = '';
             let nextCatch = '';
 
-            CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec(function(errus, postus) {                    
-                prevCatch = postus[0]._id;
+            
+            let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec();
+
+            prevQuery.then(function(doc) {
+                if (typeof doc[0] != "undefined") {
+                    prevCatch = doc[0]._id;
+                }
             })
 
-            CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec(function(errus, postus) {                    
-                nextCatch = postus[0]._id;
+            let nextQuery = CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec();
+
+            nextQuery.then(function(doc) {
+                if (typeof doc[0] != "undefined") {
+                    nextCatch = doc[0]._id;
+                }
             })
 
             jwt.verify(req.token, 'notverysecret', function(err, data) {
@@ -120,15 +129,31 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                             return res.status(500).json(err);
                         }
 
+                        if(!doc) {
+                            return res.status(500).json(err);
+                        }
+
                         res.status(200).json({ 
                             id: doc.id,
                             user: doc.user,
                             specie: doc.specie,
                             timestamp: doc.timestamp,
+                            links: [
+                                {
+                                    href: req.url,
+                                    rel: 'self',
+                                    method: 'GET'
+                                },
+                                {
+                                    href: '/api/catches/',
+                                    rel: 'parent',
+                                    method: 'GET'
+                                }
+                            ],
                             navigation: [
                                 {
-                                    previous: prevCatch,
-                                    next: nextCatch
+                                    previous: baseUrl + '/api/catches/' + prevCatch,
+                                    next: baseUrl + '/api/catches/' + nextCatch
                                 }
                             ]
                         });
@@ -136,6 +161,10 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                 } else {
                     CatchModel.findById(req.params.id, function (err, doc){
                         if (err) {
+                            return res.status(500).json(err);
+                        }
+
+                        if(!doc) {
                             return res.status(500).json(err);
                         }
 
@@ -160,8 +189,8 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                             ],
                             navigation: [
                                 {
-                                    previous: prevCatch,
-                                    next: nextCatch
+                                    previous: baseUrl + '/api/catches/' + prevCatch,
+                                    next: baseUrl + '/api/catches/' + nextCatch
                                 }
                             ]
                         });
@@ -195,7 +224,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                         }
                     })
                     
-                    res.statusCode(204);
+                    res.sendStatus(204);
                 });
             })
         })
@@ -212,6 +241,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                     }
 
                     res.status(200).json({
+                        message: 'Deleted',
                         links: [
                             {
                                 href: req.url,
@@ -228,7 +258,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
     router.route('/test/')
         .post(function(req, res) {
-            console.log('Webhook:' + req.body);
+            console.log(req.body);
             res.json(req.body);
         })
 

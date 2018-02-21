@@ -69,7 +69,9 @@ module.exports = function(jwt, WebhookModel, jwtVerify) {
                         return res.status(500).json(err);
                     }
 
-                    res.status(201).json(doc);
+                    res.status(201).json({
+                        message: 'Webhook registered'
+                    });
                 });
             })
         })

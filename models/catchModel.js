@@ -25,7 +25,6 @@ let catchSchema = mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
     },
     misc: {
         type: String
