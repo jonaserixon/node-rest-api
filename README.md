@@ -2,11 +2,11 @@
 
 ### How have you implemented the idea of HATEOAS in your API? Motivate your choices and how it support the idea of HATEOAS?
 
-My implementation of HATEOAS in my API was to add an array containing different paths that the user might be interested in getting, like a smorgosbord of URLs. It has the href, relation and method information of it. 
+My implementation of HATEOAS in my API was to add an array containing different paths that the user might be interested in knowing, like a smorgasbord of URLs. It has the href, relation and HTTP method information of it. 
 
 So my thought is that the user can get the links related to the active route which can help with the navigation of the API. 
 
-I also provide some extra navigation urls when a user is requesting a specific catch with an id. There will be a previous and a next type of link to enable the user to navigate through all the catches.
+I also provide some extra navigation URLs when a user is requesting a specific catch with an id. There will be a **previous** and a **next** property containing the href to the previous catch and also the next catch. This enable the user to navigate through the list of catches. 
 
 
 ### If your solution should implement multiple representations of the resources. How would you do it?
