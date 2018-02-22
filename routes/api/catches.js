@@ -61,7 +61,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
                 for(let i = 0; i < doc.length; i++) {
                     data.push({
-                        catch: baseUrl + req.url + '/' + doc[i].id
+                        catch: req.url + doc[i].id
                     });
                 }
                 
@@ -141,25 +141,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                 id: doc.id,
                                 user: doc.user,
                                 specie: doc.specie,
-                                timestamp: doc.timestamp,
-                                links: [
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'GET'
-                                    },
-                                    {
-                                        href: '/api/catches/',
-                                        rel: 'parent',
-                                        method: 'GET'
-                                    }
-                                ],
-                                navigation: [
-                                    {
-                                        previous: baseUrl + '/api/catches/' + prevCatch,
-                                        next: baseUrl + '/api/catches/' + nextCatch
-                                    }
-                                ]
+                                timestamp: doc.timestamp
                             });
                         });
                     } else {
