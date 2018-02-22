@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "1dv527 - WEB API",
-		"_postman_id": "7101d3e7-2596-8e03-ce78-eae07c727d17",
+		"_postman_id": "63e5b592-6ac9-cf81-e2a4-a3bb09da8271",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -111,7 +111,10 @@
 						"url": "{{url}}/api/auth/",
 						"method": "GET",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -196,7 +199,10 @@
 								"description": ""
 							}
 						],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -236,7 +242,7 @@
 							"urlencoded": [
 								{
 									"key": "user",
-									"value": "ging",
+									"value": "lars",
 									"description": "",
 									"type": "text"
 								},
@@ -317,7 +323,10 @@
 								"description": ""
 							}
 						],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -354,20 +363,50 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
+									"key": "user",
+									"value": "killen med kollen",
+									"description": "",
+									"type": "text"
+								},
+								{
 									"key": "position",
-									"value": "1337 put",
+									"value": "19° N 980° E\"",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "specie",
-									"value": "sköldis",
+									"value": "abborre",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "length",
+									"value": "2000cm",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "weight",
-									"value": "1337kg",
+									"value": "100kg",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "image_url",
+									"value": "https://sv.wikipedia.org/wiki/Abborre#/media/File:Europeanperch.jpg",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "var tydligen en abborre, inte en haj",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "misc",
+									"value": "så kan det gå",
 									"description": "",
 									"type": "text"
 								}
@@ -405,7 +444,10 @@
 								"description": ""
 							}
 						],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -433,7 +475,10 @@
 						"url": "{{url}}/api/webhook/",
 						"method": "GET",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []

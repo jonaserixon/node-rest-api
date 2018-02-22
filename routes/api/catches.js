@@ -138,10 +138,13 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                             }
     
                             res.status(200).json({ 
-                                id: doc.id,
-                                user: doc.user,
+                                position: doc.position,
                                 specie: doc.specie,
-                                timestamp: doc.timestamp
+                                weigth: doc.weigth,
+                                length: doc.length,
+                                image_url: doc.image_url,
+                                description: doc.description,
+                                misc: doc.misc,
                             });
                         });
                     } else {
