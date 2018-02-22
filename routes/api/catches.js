@@ -138,6 +138,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                             }
     
                             res.status(200).json({ 
+                                id: doc.id,
                                 position: doc.position,
                                 specie: doc.specie,
                                 weigth: doc.weigth,
