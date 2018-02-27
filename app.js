@@ -7,6 +7,7 @@ let jwt = require('jsonwebtoken');
 let Catch = require('./models/catchModel');
 let User = require('./models/user');
 let Webhook = require('./models/webhook');
+require('dotenv').config();
 
 let mongoose = require('mongoose');
 let CatchModel = mongoose.model('Catch');

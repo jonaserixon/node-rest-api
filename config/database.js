@@ -4,7 +4,7 @@ let mongoose = require("mongoose");
 
 module.exports = {
 
-    initialize : function() {
+    initialize : function(url) {
         let db = mongoose.connection;
 
         db.on("error", console.error.bind(console, "connection error:"));
@@ -21,6 +21,6 @@ module.exports = {
         });
 
         // Connect to the database.
-        mongoose.connect("mongodb://viatrophy:viatrophy@ds135089.mlab.com:35089/viatrophy");
+        mongoose.connect(process.env['DB_URL']);
     }
 }

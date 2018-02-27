@@ -27,7 +27,7 @@ module.exports = function(jwt, UserModel, jwtVerify) {
                     res.sendStatus(404);
 
                 } else {
-                    jwt.sign({user: user}, 'notverysecret', function(err, token) {
+                    jwt.sign({user}, process.env['JWT_SECRET'], function(err, token) {
                         res.status(200).json({
                             token: token,
                             expiresInMinutes: 1440,
@@ -39,7 +39,7 @@ module.exports = function(jwt, UserModel, jwtVerify) {
                                 },
                                 {
                                     href: '/api/catches/',
-                                    rel: 'resource',
+                                    rel: 'resources',
                                     method: 'GET'
                                 },
                                 {

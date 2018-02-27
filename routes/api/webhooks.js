@@ -6,7 +6,7 @@ module.exports = function(jwt, WebhookModel, jwtVerify) {
 
     router.route('/api/webhook/')
         .get(jwtVerify, function (req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
+            jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                 if (err) {
                     res.json({
                         message: "To create a webhook, make a POST to this route and state your URL. EXAMPLE: { 'links':'http://localhost:8000' }",
@@ -46,19 +46,17 @@ module.exports = function(jwt, WebhookModel, jwtVerify) {
                             ]
                         }
                         
-                        res.json(
-                        {
+                        res.json({
                             information: obj,
                             webhooks: data
-                        } 
-                        );
+                        });
                     })
                 }
         })
 
         })
         .post(jwtVerify, function (req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
+            jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                 if (err) {
                     return res.sendStatus(401);
                 }

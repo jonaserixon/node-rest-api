@@ -70,31 +70,60 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
         })
 
         .post(jwtVerify, function(req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
+            jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                 if (err) {
                     return res.sendStatus(401);
                 }
+
+                let userCatch = {
+                    user: data.user[0].user,
+                    position: req.body.position,
+                    specie: req.body.specie,
+                    length: req.body.length,
+                    weigth: req.body.weigth,
+                    image_url: req.body.image_url,
+                    description: req.body.description,
+                    misc: req.body.misc
+                }
                 
-                let createCatch = new CatchModel(req.body);
+                let createCatch = new CatchModel(userCatch);
                 createCatch.save(function(err, doc) {
                     if (err) {
-                        return res.status(500).json(err);
+                        if (typeof doc == 'undefined') {
+                            return res.status(400).json('You forgot to add all required values!');
+                        }
+
+                        return res.sendStatus(500);
                     }
+
+                    WebhookModel.find({}, function(error, data) {
+                        if (error) {
+                            res.status(500).json(error);
+                        }
+    
+                        for(let i = 0; i < data.length; i++) {
+                            request.post(data[i].links[0][0], { json: { key: req.body }},
+                                function (error, res, body) {}
+                            );
+                        }
+                    })
+    
+                    res.status(201).json({
+                        catch: userCatch,
+                        links: [
+                            {
+                                href: req.url + doc._id,
+                                rel: 'self',
+                                method: 'GET',
+                            },
+                            {
+                                href: req.url,
+                                rel: 'parent',
+                                method: 'GET',
+                            },
+                        ]
+                    });
                 });
-
-                WebhookModel.find({}, function(error, data) {
-                    if (error) {
-                        res.status(500).json(error);
-                    }
-
-                    for(let i = 0; i < data.length; i++) {
-                        request.post(data[i].links[0][0], { json: { key: req.body }},
-                            function (error, res, body) {}
-                        );
-                    }
-                })
-
-                res.status(201).json(req.body);
             });
         })
 
@@ -105,7 +134,6 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             let prevCatch = '';
             let nextCatch = '';
 
-            
             let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec()
             .then(function(doc) {
                 if (typeof doc[0] != "undefined") {
@@ -126,14 +154,14 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
             Promise.all([prevQuery, nextQuery])
             .then(([prevCatch, nextCatch]) => {
-                jwt.verify(req.token, 'notverysecret', function(err, data) {
+                jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                     if (err) {
                         CatchModel.findById(req.params.id, function (err, doc){
                             if (err) {
                                 return res.status(500).json(err);
                             }
     
-                            if(!doc) {
+                            if (!doc) {
                                 return res.status(500).json(err);
                             }
     
@@ -154,7 +182,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                 return res.status(500).json(err);
                             }
     
-                            if(!doc) {
+                            if (!doc) {
                                 return res.status(500).json(err);
                             }
     
@@ -174,13 +202,22 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                         href: req.url,
                                         rel: 'self',
                                         method: 'GET',
-                                        category: '/api/catches/'
+                                    },
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'PUT',
+                                    },
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'DELETE',
                                     }
                                 ],
                                 navigation: [
                                     {
-                                        previous: baseUrl + '/api/catches/' + prevCatch,
-                                        next: baseUrl + '/api/catches/' + nextCatch
+                                        previous: '/api/catches/' + prevCatch,
+                                        next: '/api/catches/' + nextCatch
                                     }
                                 ]
                             });
@@ -191,12 +228,20 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
         })
 
         .put(jwtVerify, function(req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
+            jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
+
+
+                
                 if (err) {
                     return res.sendStatus(401);
                 }
 
                 CatchModel.findOne({_id: req.params.id}, function(err, doc) {
+                    if (data.user[0].user != doc.user) {
+                        return res.status(400).json('aja baja');
+                    }
+
+
                     if (err) {
                         return res.status(500).json(err);
                     }
@@ -215,13 +260,32 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                         }
                     })
                     
-                    res.sendStatus(204);
+                    res.status(200).json({
+                        message: 'Updated',
+                        links: [
+                            {
+                                href: req.url,
+                                rel: 'self',
+                                method: 'PUT',
+                            },
+                            {
+                                href: req.url,
+                                rel: 'self',
+                                method: 'DELETE',
+                            },
+                            {
+                                href: req.url,
+                                rel: 'self',
+                                method: 'GET',
+                            }
+                        ]
+                    });
                 });
             })
         })
 
         .delete(jwtVerify, function(req, res) {
-            jwt.verify(req.token, 'notverysecret', function(err, data) {
+            jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                 if (err) {
                     return res.sendStatus(401);
                 }
@@ -249,7 +313,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
     //Just testing if the webhook event works.
     router.route('/test/')
         .post(function(req, res) {
-            console.log(req.body);
+            //console.log(req.body);
             res.json(req.body);
         })
 
