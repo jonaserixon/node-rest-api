@@ -229,16 +229,14 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
         .put(jwtVerify, function(req, res) {
             jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
-
-
-                
                 if (err) {
                     return res.sendStatus(401);
                 }
 
                 CatchModel.findOne({_id: req.params.id}, function(err, doc) {
+                    //Kollar så att den inloggade usern bara kan ändra datan på sina catches
                     if (data.user[0].user != doc.user) {
-                        return res.status(400).json('aja baja');
+                        return res.status(403).json('access denied when trying to update this resource');
                     }
 
 
@@ -302,7 +300,16 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                 href: req.url,
                                 rel: 'self',
                                 method: 'DELETE',
-                                category: '/api/catches/'
+                            },
+                            {
+                                href: baseUrl + '/api/catches/',
+                                rel: 'resources',
+                                method: 'GET',
+                            },
+                            {
+                                href: baseUrl + '/api/catches/',
+                                rel: 'create',
+                                method: 'POST',
                             }
                         ]
                     });
