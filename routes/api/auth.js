@@ -1,6 +1,7 @@
 'use strict';
 
 let router = require("express").Router();
+let bcrypt = require('bcrypt-nodejs');
 
 module.exports = function(jwt, UserModel, jwtVerify) {
 
@@ -25,8 +26,9 @@ module.exports = function(jwt, UserModel, jwtVerify) {
 
                 if (!user.length) {
                     res.sendStatus(404);
+                }
 
-                } else {
+                if (bcrypt.compareSync(req.body.password, user[0].password)) {
                     jwt.sign({user}, process.env['JWT_SECRET'], function(err, token) {
                         res.status(200).json({
                             token: token,

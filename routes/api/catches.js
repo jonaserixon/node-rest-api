@@ -275,6 +275,11 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                 href: req.url,
                                 rel: 'self',
                                 method: 'GET',
+                            },
+                            {
+                                href: '/api/catches/',
+                                rel: 'resources',
+                                method: 'GET',
                             }
                         ]
                     });
@@ -288,31 +293,41 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                     return res.sendStatus(401);
                 }
 
-                CatchModel.findByIdAndRemove(req.params.id, function(err) {
+                CatchModel.findOne({_id: req.params.id}, function(err, doc) {
+                    if (data.user[0].user != doc.user) {
+                        return res.status(403).json('access denied when trying to delete this resource');
+                    }
+
                     if (err) {
                         return res.status(500).json(err);
                     }
 
-                    res.status(200).json({
-                        message: 'Deleted',
-                        links: [
-                            {
-                                href: req.url,
-                                rel: 'self',
-                                method: 'DELETE',
-                            },
-                            {
-                                href: baseUrl + '/api/catches/',
-                                rel: 'resources',
-                                method: 'GET',
-                            },
-                            {
-                                href: baseUrl + '/api/catches/',
-                                rel: 'create',
-                                method: 'POST',
-                            }
-                        ]
-                    });
+                    CatchModel.remove(function(err, result) {
+                        if (err) {
+                            return res.status(500).json(err);
+                        }
+
+                        res.status(200).json({
+                            message: 'Deleted',
+                            links: [
+                                {
+                                    href: req.url,
+                                    rel: 'self',
+                                    method: 'DELETE',
+                                },
+                                {
+                                    href: baseUrl + '/api/catches/',
+                                    rel: 'resources',
+                                    method: 'GET',
+                                },
+                                {
+                                    href: baseUrl + '/api/catches/',
+                                    rel: 'create',
+                                    method: 'POST',
+                                }
+                            ]
+                        });
+                    })
                 });
             })
         })

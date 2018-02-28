@@ -1,6 +1,7 @@
 'use strict';
 
 let router = require("express").Router();
+let bcrypt = require('bcrypt-nodejs');
 
 module.exports = function(jwt, UserModel, jwtVerify) {
 
@@ -23,7 +24,10 @@ module.exports = function(jwt, UserModel, jwtVerify) {
         })
 
         .post(function(req, res) {
-            let newUser = new UserModel(req.body);
+            let newUser = new UserModel({
+                user: req.body.user,
+                password: bcrypt.hashSync(req.body.password)
+            });
 
             newUser.save(function(err, doc) {
                 if (err) {
@@ -34,9 +38,14 @@ module.exports = function(jwt, UserModel, jwtVerify) {
                     message: 'Successfully registered!',
                     links: [
                         {
-                            href: '/api/auth/',
-                            rel: 'authorize',
+                            href: req.url,
+                            rel: 'auth',
                             method: 'GET'
+                        },
+                        {
+                            href: '/api/auth/',
+                            rel: 'auth',
+                            method: 'POST'
                         }
                     ]
                 });
