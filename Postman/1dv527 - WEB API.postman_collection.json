@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "1dv527 - WEB API",
-		"_postman_id": "63e5b592-6ac9-cf81-e2a4-a3bb09da8271",
+		"_postman_id": "1c273495-86f5-88f7-07fb-4241a023effa",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -151,7 +151,13 @@
 							"urlencoded": [
 								{
 									"key": "user",
-									"value": "najskille",
+									"value": "admin",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
 									"description": "",
 									"type": "text"
 								}
@@ -177,8 +183,10 @@
 								"exec": [
 									"var data = JSON.parse(responseBody);\r",
 									"postman.setEnvironmentVariable(\"id\", data.catches[1].catch);\r",
+									"postman.setEnvironmentVariable(\"delete_id\", data.catches[2].catch);\r",
 									"\r",
-									"tests[\"Gets the correct url length to catches\"] = responseBody.length = 59;\r",
+									"\r",
+									"tests[\"Gets the correct url length to catches\"] = data.length = 59;\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;"
 								]
 							}
@@ -241,12 +249,6 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
-									"key": "user",
-									"value": "lars",
-									"description": "",
-									"type": "text"
-								},
-								{
 									"key": "position",
 									"value": "119° N 98° E",
 									"description": "",
@@ -254,19 +256,19 @@
 								},
 								{
 									"key": "specie",
-									"value": "VITHAJ",
+									"value": "späckhuggare",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "length",
-									"value": "2000000cm",
+									"value": "9000000000000cm",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "weight",
-									"value": "10000000kg",
+									"value": "50000000kg",
 									"description": "",
 									"type": "text"
 								},
@@ -278,13 +280,13 @@
 								},
 								{
 									"key": "description",
-									"value": "fin färg",
+									"value": "fin fisk",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "misc",
-									"value": "enligt mig",
+									"value": "faktiskt",
 									"description": "",
 									"type": "text"
 								}
@@ -339,7 +341,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"tests[\"Status code is 204\"] = responseCode.code === 204;"
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
 								]
 							}
 						}
@@ -362,12 +364,6 @@
 						"body": {
 							"mode": "urlencoded",
 							"urlencoded": [
-								{
-									"key": "user",
-									"value": "killen med kollen",
-									"description": "",
-									"type": "text"
-								},
 								{
 									"key": "position",
 									"value": "19° N 980° E\"",
@@ -430,7 +426,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}{{id}}",
+						"url": "{{url}}{{delete_id}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -522,6 +518,217 @@
 								}
 							]
 						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Felaktiga requests",
+			"description": "",
+			"item": [
+				{
+					"name": "GET ALL CATCHES",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"other_id\", data.catches[data.catches.length - 1]);\r",
+									"\r",
+									"tests[\"Gets the correct url length to catches\"] = responseBody.length = 59;\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/api/catches/",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "auth user that will make bad requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", data.token);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/api/auth/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "user",
+									"value": "not_admin",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "EMPTY CATCH OBJECT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"\r",
+									"tests[\"Status code is 400\"] = responseCode.code === 400;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/api/catches/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"description": "",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer: {{token}}",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "REQUEST NON-EXISTING RESOURCE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody);\r",
+									"\r",
+									"tests['Does not get username'] = data.message === 'resource does not exist';\r",
+									"tests[\"Status code is 500\"] = responseCode.code === 500;\r",
+									"\r",
+									"\r",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/api/catches/5a9d3ad1259a4c0fe03995bf",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"description": "",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer: {{token}}",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "GET ANOTHER USERS CATCH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody);",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"tests['Does not get username'] = data.user === undefined;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}{{id}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer: {{token}}",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "GET CATCH WITHOUT JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody);",
+									"",
+									"tests[\"Status code is 400\"] = responseCode.code === 400;",
+									"tests['Missing JWT'] = data.message === \"jwt must be provided\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}{{id}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
 						"description": ""
 					},
 					"response": []

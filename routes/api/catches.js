@@ -156,15 +156,19 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
             .then(([prevCatch, nextCatch]) => {
                 jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                     if (err) {
-                        CatchModel.findById(req.params.id, function (err, doc){
-                            if (err) {
-                                return res.status(500).json(err);
-                            }
-    
-                            if (!doc) {
-                                return res.status(500).json(err);
-                            }
-    
+                        return res.status(400).json(err);
+                    }
+
+                    CatchModel.findById(req.params.id, function (err, doc){
+                        if (err) {
+                            return res.status(500).json(err);
+                        }
+
+                        if (!doc) {
+                            return res.status(500).json({message: 'resource does not exist'});
+                        }
+
+                        if (data.user[0].user != doc.user) {
                             res.status(200).json({ 
                                 id: doc.id,
                                 position: doc.position,
@@ -172,20 +176,31 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                 weigth: doc.weigth,
                                 length: doc.length,
                                 image_url: doc.image_url,
-                                description: doc.description,
-                                misc: doc.misc,
+                                links: [
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'GET',
+                                    },
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'PUT',
+                                    },
+                                    {
+                                        href: req.url,
+                                        rel: 'self',
+                                        method: 'DELETE',
+                                    }
+                                ],
+                                navigation: [
+                                    {
+                                        previous: '/api/catches/' + prevCatch,
+                                        next: '/api/catches/' + nextCatch
+                                    }
+                                ]
                             });
-                        });
-                    } else {
-                        CatchModel.findById(req.params.id, function (err, doc){
-                            if (err) {
-                                return res.status(500).json(err);
-                            }
-    
-                            if (!doc) {
-                                return res.status(500).json(err);
-                            }
-    
+                        } else {
                             res.status(200).json({ 
                                 id: doc.id,
                                 user: doc.user,
@@ -221,8 +236,8 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                                     }
                                 ]
                             });
-                        });
-                    }
+                        }
+                    })
                 })
             })
         })
@@ -294,15 +309,13 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                 }
 
                 CatchModel.findOne({_id: req.params.id}, function(err, doc) {
-                    if (data.user[0].user != doc.user) {
-                        return res.status(403).json('access denied when trying to delete this resource');
-                    }
+                    
 
-                    if (err) {
-                        return res.status(500).json(err);
-                    }
-
-                    CatchModel.remove(function(err, result) {
+                    CatchModel.remove({_id: req.params.id},function(err, result) {
+                        if (data.user[0].user != doc.user) {
+                            return res.status(403).json('access denied when trying to delete this resource');
+                        }
+    
                         if (err) {
                             return res.status(500).json(err);
                         }
@@ -328,7 +341,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                             ]
                         });
                     })
-                });
+                })
             })
         })
 
