@@ -131,6 +131,12 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
     router.route('/api/catches/:id')
         .get(jwtVerify, function (req, res) {
 
+            CatchModel.find({_id: req.params.id}, function(err, doc) {
+                if (err) {
+                    return res.sendStatus(404);
+                }
+            })
+
             let prevCatch = '';
             let nextCatch = '';
 

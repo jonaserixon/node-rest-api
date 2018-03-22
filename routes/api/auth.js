@@ -21,11 +21,11 @@ module.exports = function(jwt, UserModel, jwtVerify) {
         .post(function(req, res) {
             UserModel.find({'user': req.body.user}, function(err, user) {
                 if (err) {
-                    res.status(500).json(err);
+                    return res.status(500).json(err);
                 }
 
                 if (!user.length) {
-                    res.sendStatus(404);
+                    return res.sendStatus(404);
                 }
 
                 if (bcrypt.compareSync(req.body.password, user[0].password)) {
