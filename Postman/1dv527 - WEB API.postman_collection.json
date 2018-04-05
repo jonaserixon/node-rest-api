@@ -529,7 +529,7 @@
 			"description": "",
 			"item": [
 				{
-					"name": "GET ALL CATCHES",
+					"name": "Get all catch resources",
 					"event": [
 						{
 							"listen": "test",
@@ -556,7 +556,7 @@
 					"response": []
 				},
 				{
-					"name": "auth user that will make bad requests",
+					"name": "Auth another user (only for test scenario)",
 					"event": [
 						{
 							"listen": "test",
@@ -602,7 +602,7 @@
 					"response": []
 				},
 				{
-					"name": "EMPTY CATCH OBJECT",
+					"name": "Post empty resource",
 					"event": [
 						{
 							"listen": "test",
@@ -637,26 +637,21 @@
 					"response": []
 				},
 				{
-					"name": "REQUEST NON-EXISTING RESOURCE",
+					"name": "Get non-existing resource",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"var data = JSON.parse(responseBody);\r",
-									"\r",
-									"tests['Does not get username'] = data.message === 'resource does not exist';\r",
-									"tests[\"Status code is 500\"] = responseCode.code === 500;\r",
-									"\r",
-									"\r",
+									"tests[\"Status code is 404\"] = responseCode.code === 404;\r",
 									""
 								]
 							}
 						}
 					],
 					"request": {
-						"url": "{{url}}/api/catches/5a9d3ad1259a4c0fe03995bf",
+						"url": "{{url}}/api/catches/hejsansvejsan",
 						"method": "GET",
 						"header": [
 							{
@@ -677,7 +672,7 @@
 					"response": []
 				},
 				{
-					"name": "GET ANOTHER USERS CATCH",
+					"name": "Get resource created by another user",
 					"event": [
 						{
 							"listen": "test",
@@ -709,7 +704,7 @@
 					"response": []
 				},
 				{
-					"name": "GET CATCH WITHOUT JWT",
+					"name": "Get resource without token",
 					"event": [
 						{
 							"listen": "test",
@@ -729,6 +724,51 @@
 						"method": "GET",
 						"header": [],
 						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Handle wrong user credentials",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 401\"] = responseCode.code === 401;\r",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/api/auth/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "user",
+									"value": "non_existing_username",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "wrong_password",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
 						"description": ""
 					},
 					"response": []
