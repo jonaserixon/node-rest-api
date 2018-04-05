@@ -25,7 +25,7 @@ module.exports = function(jwt, UserModel, jwtVerify) {
                 }
 
                 if (!user.length) {
-                    return res.sendStatus(404);
+                    return res.sendStatus(401);
                 }
 
                 if (bcrypt.compareSync(req.body.password, user[0].password)) {
@@ -52,6 +52,8 @@ module.exports = function(jwt, UserModel, jwtVerify) {
                             ]
                         });
                     });
+                } else {
+                    return res.sendStatus(401);
                 }
             }); 
         })

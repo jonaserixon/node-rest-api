@@ -9,7 +9,7 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
 
     router.route('/')
         .get(function(req, res){
-            res.send('<p>To use our API, refer to the http://localhost:8000/api/ route.</p>');
+            res.send('<p>To use this API, refer to the http://localhost:8000/api/ route.</p>');
         })
 
     router.route('/api/')
@@ -135,114 +135,114 @@ module.exports = function(jwt, CatchModel, UserModel, WebhookModel, jwtVerify) {
                 if (err) {
                     return res.sendStatus(404);
                 }
-            })
 
-            let prevCatch = '';
-            let nextCatch = '';
+                let prevCatch = '';
+                let nextCatch = '';
 
-            let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec()
-            .then(function(doc) {
-                if (typeof doc[0] != "undefined") {
-                    doc = doc[0]._id;
-                }
-
-                return doc;
-            })
-
-            let nextQuery = CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec()
-            .then(function(doc) {
-                if (typeof doc[0] != "undefined") {
-                    doc = doc[0]._id;
-                }
-
-                return doc;
-            })
-
-            Promise.all([prevQuery, nextQuery])
-            .then(([prevCatch, nextCatch]) => {
-                jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
-                    if (err) {
-                        return res.status(400).json(err);
+                let prevQuery = CatchModel.find({_id: {$lt: req.params.id}}).sort({_id: -1 }).limit(1).exec()
+                .then(function(doc) {
+                    if (typeof doc[0] != "undefined") {
+                        doc = doc[0]._id;
                     }
 
-                    CatchModel.findById(req.params.id, function (err, doc){
+                    return doc;
+                })
+
+                let nextQuery = CatchModel.find({_id: {$gt: req.params.id}}).sort({_id: 1 }).limit(1).exec()
+                .then(function(doc) {
+                    if (typeof doc[0] != "undefined") {
+                        doc = doc[0]._id;
+                    }
+
+                    return doc;
+                })
+
+                Promise.all([prevQuery, nextQuery])
+                .then(([prevCatch, nextCatch]) => {
+                    jwt.verify(req.token, process.env['JWT_SECRET'], function(err, data) {
                         if (err) {
-                            return res.status(500).json(err);
+                            return res.status(400).json(err);
                         }
 
-                        if (!doc) {
-                            return res.status(500).json({message: 'resource does not exist'});
-                        }
+                        CatchModel.findById(req.params.id, function (err, doc){
+                            if (err) {
+                                return res.status(500).json(err);
+                            }
 
-                        if (data.user[0].user != doc.user) {
-                            res.status(200).json({ 
-                                id: doc.id,
-                                position: doc.position,
-                                specie: doc.specie,
-                                weigth: doc.weigth,
-                                length: doc.length,
-                                image_url: doc.image_url,
-                                links: [
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'GET',
-                                    },
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'PUT',
-                                    },
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'DELETE',
-                                    }
-                                ],
-                                navigation: [
-                                    {
-                                        previous: '/api/catches/' + prevCatch,
-                                        next: '/api/catches/' + nextCatch
-                                    }
-                                ]
-                            });
-                        } else {
-                            res.status(200).json({ 
-                                id: doc.id,
-                                user: doc.user,
-                                position: doc.position,
-                                specie: doc.specie,
-                                weigth: doc.weigth,
-                                length: doc.length,
-                                image_url: doc.image_url,
-                                description: doc.description,
-                                misc: doc.misc,
-                                timestamp: doc.timestamp,
-                                links: [
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'GET',
-                                    },
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'PUT',
-                                    },
-                                    {
-                                        href: req.url,
-                                        rel: 'self',
-                                        method: 'DELETE',
-                                    }
-                                ],
-                                navigation: [
-                                    {
-                                        previous: '/api/catches/' + prevCatch,
-                                        next: '/api/catches/' + nextCatch
-                                    }
-                                ]
-                            });
-                        }
+                            if (!doc) {
+                                return res.sendStatus(404);
+                            }
+
+                            if (data.user[0].user != doc.user) {
+                                res.status(200).json({ 
+                                    id: doc.id,
+                                    position: doc.position,
+                                    specie: doc.specie,
+                                    weigth: doc.weigth,
+                                    length: doc.length,
+                                    image_url: doc.image_url,
+                                    links: [
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'GET',
+                                        },
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'PUT',
+                                        },
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'DELETE',
+                                        }
+                                    ],
+                                    navigation: [
+                                        {
+                                            previous: '/api/catches/' + prevCatch,
+                                            next: '/api/catches/' + nextCatch
+                                        }
+                                    ]
+                                });
+                            } else {
+                                res.status(200).json({ 
+                                    id: doc.id,
+                                    user: doc.user,
+                                    position: doc.position,
+                                    specie: doc.specie,
+                                    weigth: doc.weigth,
+                                    length: doc.length,
+                                    image_url: doc.image_url,
+                                    description: doc.description,
+                                    misc: doc.misc,
+                                    timestamp: doc.timestamp,
+                                    links: [
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'GET',
+                                        },
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'PUT',
+                                        },
+                                        {
+                                            href: req.url,
+                                            rel: 'self',
+                                            method: 'DELETE',
+                                        }
+                                    ],
+                                    navigation: [
+                                        {
+                                            previous: '/api/catches/' + prevCatch,
+                                            next: '/api/catches/' + nextCatch
+                                        }
+                                    ]
+                                });
+                            }
+                        })
                     })
                 })
             })
